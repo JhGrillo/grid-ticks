@@ -66,7 +66,8 @@ export default function ChamadoDetalhesModal({ chamado, onClose, usuario }) {
     setLoading(true);
     try {
       const status = tipo === 'validar' ? 'Finalizado' : 'Em execução';
-      const res = await fetch(`http://localhost:5000/api/chamados/${chamado._id || chamado.id}/status`, {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const res = await fetch(`${apiBase.replace(/\/$/, '')}/api/chamados/${chamado._id || chamado.id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, mensagem: `[${new Date().toLocaleDateString()}, ${new Date().toLocaleTimeString()}] ${tipo === 'validar' ? 'Validação' : 'Reprovação'}: ${observacao}` })

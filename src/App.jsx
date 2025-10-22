@@ -154,7 +154,8 @@ function App() {
     try {
       const [carteira, seg] = segmentacao.split('|');
       const payload = { ...form, carteira, segmentacao: seg };
-      const res = await fetch('http://localhost:5000/api/chamados', {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const res = await fetch(`${apiBase.replace(/\/$/, '')}/api/chamados`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -318,7 +319,8 @@ function App() {
                 setLoginErro("");
                 setLoginLoading(true);
                 try {
-                  const res = await fetch('http://localhost:5000/api/users/login', {
+                  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                  const res = await fetch(`${apiBase.replace(/\/$/, '')}/api/users/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(loginForm)

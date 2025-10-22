@@ -1,7 +1,8 @@
 // Camada de acesso à API de chamados
 // Centraliza URLs e facilita futura inclusão de token JWT
 
-const BASE = 'http://localhost:5000/api/chamados';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BASE = `${API_BASE.replace(/\/$/, '')}/api/chamados`;
 
 async function http(method, url, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
