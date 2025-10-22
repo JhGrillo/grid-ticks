@@ -34,7 +34,8 @@ function ConsultarChamado({ onResult, onList }) {
     setErro("");
     setLoading(true);
     try {
-  let url = `http://localhost:5000/api/chamados/${input}`;
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const url = `${apiBase.replace(/\/$/, '')}/api/chamados/${input}`;
       const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {
