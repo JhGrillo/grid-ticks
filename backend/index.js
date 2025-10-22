@@ -37,7 +37,31 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => {
   console.log('MongoDB Atlas conectado!');
-  app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+  const server = app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+  // Health endpoint para plataformas como Railway
+  app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+
+  // Graceful shutdown: fecha servidor e conexão com mongoose
+  const shutdown = async (signal) => {
+    console.log(`Recebido ${signal}. Fechando servidor...`);
+    try {
+      await mongoose.disconnect();
+      server.close(() => {
+        console.log('Servidor finalizado.');
+        process.exit(0);
+      });
+      // Caso não finalize em 10s, forçar
+      setTimeout(() => {
+        console.error('Falha ao fechar a tempo, forçando saída.');
+        process.exit(1);
+      }, 10000).unref();
+    } catch (err) {
+      console.error('Erro durante shutdown:', err);
+      process.exit(1);
+    }
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
   // Agendamento: roda a cada 10 minutos
   setInterval(() => {
     autoFinalizeChamadosEmValidacao().catch(err => console.error('Erro no autoFinalize:', err));
