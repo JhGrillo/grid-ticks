@@ -31,9 +31,22 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 
+// Print presence of env vars (sem imprimir valores) — útil para logs na plataforma
+console.log('ENV check - MONGO_URI present:', !!process.env.MONGO_URI);
+console.log('ENV check - JWT_SECRET present:', !!process.env.JWT_SECRET);
+
+// Mais logs do mongoose para diagnosticar no Railway
+mongoose.connection.on('connecting', () => console.log('Mongoose: connecting...'));
+mongoose.connection.on('connected', () => console.log('Mongoose: connected'));
+mongoose.connection.on('reconnected', () => console.log('Mongoose: reconnected'));
+mongoose.connection.on('disconnected', () => console.log('Mongoose: disconnected'));
+mongoose.connection.on('error', (err) => console.error('Mongoose: connection error:', err && err.message ? err.message : err));
+
+// Adiciona serverSelectionTimeoutMS para falhar mais rapidamente em caso de problemas de rede/DNS
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 10000, // 10s
 })
 .then(() => {
   console.log('MongoDB Atlas conectado!');
@@ -67,4 +80,8 @@ mongoose.connect(process.env.MONGO_URI, {
     autoFinalizeChamadosEmValidacao().catch(err => console.error('Erro no autoFinalize:', err));
   }, 10 * 60 * 1000);
 })
-.catch((err) => console.error('Erro ao conectar no MongoDB:', err));
+.catch((err) => {
+  console.error('Erro ao conectar no MongoDB:', err && err.message ? err.message : err);
+  // Em ambiente de produção é melhor falhar rápido para ver o erro nos logs da plataforma
+  process.exit(1);
+});
